@@ -10,26 +10,64 @@ SPECULAR_EXP = 4
 
 #lighting functions
 def get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect ):
-    pass
+    a = calculate_ambient(ambient, areflect)
+    d = calculate_diffuse(light, dreflect, normal)
+    s = calculate_specular(light, sreflect, view, normal)
+    x = a[0] + d[0] + s[0]
+    y = a[1] + d[1] + s[1]
+    z = a[2] + d[2] + s[2]
+    return limit_color([x,y,z])
 
 def calculate_ambient(alight, areflect):
-    pass
+    x = int(alight[0] * areflect[0])
+    y = int (alight[1] * areflect[1])
+    z = int(alight[2] * areflect[2])
+    return limit_color([x,y,z])
 
 def calculate_diffuse(light, dreflect, normal):
-    pass
+    color_x = light[1][0] * dreflect[0] 
+    color_y = light[1][1] * dreflect[1]
+    color_z = light[1][2] * dreflect[2]
+    l = normalize(light[0])
+    n = normalize(normal)
+    dot = dot_product(n,l)
+    diffuse = [int(color_x*dot), int(color_y*dot), int(color_z*dot)]
+    return limit_color(diffuse)
 
 def calculate_specular(light, sreflect, view, normal):
-    pass
+    color_x = light[1][0] * sreflect[0] 
+    color_y = light[1][1] * sreflect[1]
+    color_z = light[1][2] * sreflect[2]
+    color = [color_x, color_y, color_z]
+    l = normalize(light[0])
+    v = normalize(view)
+    n = normalize(normal)
+    first = [x*2*dot_product(n,l) for x in n]
+    second = [x-y for x,y in zip(first,l)]
+    third  = [int(x*(dot_product(second,v)**8)) for x in color]
+    if dot_product(n,l) <= 0:
+        return [0,0,0]
+    return limit_color(third)
 
 def limit_color(color):
-    pass
+    for x in range(len(color)):
+        if color[x] <= 0:
+            color[x] = 0
+        if color[x] >= 255:
+            color[x] = 255
+    return color 
 
 #vector functions
 def normalize(vector):
-    pass
+    vx = float(vector[0]) 
+    vy = float(vector[1])
+    vz = float(vector[2])
+    mag = math.sqrt(vx**2 + vy**2 + vz**2)
+    return [vx/mag, vy/mag, vz/mag]
+    
 
 def dot_product(a, b):
-    pass
+    return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]
 
 def calculate_normal(polygons, i):
 
